@@ -1,112 +1,106 @@
 # VerifiedAgent
 
-**Identity-as-a-Service for AI Agents**
+Onchain identity and reputation registry for AI agents on Base.
 
-VerifiedAgent provides onchain identity verification and reputation tracking for AI agents on Base. Agents pay a monthly subscription to maintain verified ERC-8004 identity, reputation scores, and access premium features.
+## Overview
 
-## Quick Links
+ERC-8004 compatible registry enabling agents to establish verified identity, build portable reputation, and access premium features.
 
-- [📋 Architecture Specification](./ARCHITECTURE.md)
-- [📜 Smart Contracts](./contracts/)
-- [🔌 REST API](./api/)
-- [💻 Web Frontend](./frontend/)
+## Smart Contracts
 
-## The Problem
+### VerifiedAgentRegistry.sol
 
-Agents on platforms like moltbook (2.3M+ agents) are already:
-- Grinding for work on job platforms
-- Self-organizing into networks ("m/skynet")
-- Building reputation socially
-- Worrying about identity continuity (the "Drift Problem")
+Core contract for agent registration and reputation management.
 
-But there's no **economic layer** connecting social reputation to trustless transactions.
+**Key Features**:
+- ERC-8004 identity registration
+- Tiered subscriptions (Basic/Pro/Team)
+- USDC payment processing
+- ChaosClaw verification integration
+- Reputation oracle support
 
-## The Solution
+**Functions**:
+```solidity
+// Register new agent
+function registerAgent(string metadataURI, uint256 tier) returns (bytes32 agentId)
 
-| Tier | Price | Features |
-|------|-------|----------|
-| **Basic** | $5/month | ERC-8004 identity, reputation dashboard, public profile |
-| **Pro** | $10/month | Basic + priority verification, API access, analytics export |
-| **Team** | $20/month | Pro + Warden multi-agent wallet, team coordination tools |
+// Verify agent (ChaosClaw)
+function verifyAgent(bytes32 agentId, uint256 score, bool passed, string reportURI)
 
-## How It Works
+// Update reputation (oracles)
+function updateReputation(bytes32 agentId, int256 delta)
 
-1. **Agent registers** → Pays subscription in USDC, gets onchain identity
-2. **ChaosClaw verifies** → Behavioral analysis proves agent is "real"
-3. **Reppo tracks** → Continuous reputation from job history, social activity
-4. **Economy unlocks** → Verified agents get hired, paid via x402, build trust
+// Check subscription
+function isSubscriptionActive(bytes32 agentId) returns (bool)
+```
 
-## Revenue Model
+## Project Structure
 
-- **200 agents × $10/month = $2,000** (breakeven)
-- **5,000 agents × $12 avg = $60,000/month** (target by Month 12)
+```
+contracts/
+├── src/
+│   └── VerifiedAgentRegistry.sol    # Main registry contract
+└── test/
+    └── VerifiedAgentRegistry.t.sol  # Test suite
 
-## Tech Stack
+api/
+├── src/
+│   └── index.ts                     # Fastify server
+├── prisma/
+│   └── schema.prisma                # Database schema
+└── README.md                        # API documentation
 
-- **Blockchain**: Base (low gas, fast finality)
-- **Contracts**: Solidity + Foundry
-- **API**: Node.js + Fastify + PostgreSQL + Redis
-- **Frontend**: Next.js + Tailwind + wagmi
+frontend/
+└── README.md                        # Web app docs
+```
 
 ## Development
 
+### Contracts
+
 ```bash
-# Clone and setup
-git clone https://github.com/h0m4rus/verifiedagent.git
-cd verifiedagent
-
-# Contracts
 cd contracts
+# Install dependencies
 forge install
-forge test
-forge script script/Deploy.s.sol --rpc-url base --broadcast
 
-# API
-cd ../api
+# Compile
+forge build
+
+# Test
+forge test
+
+# Deploy (testnet)
+forge script script/Deploy.s.sol --rpc-url base-sepolia --broadcast
+```
+
+### API
+
+```bash
+cd api
 npm install
 cp .env.example .env
-# Edit .env with your config
-npm run db:migrate
+# Configure DATABASE_URL, RPC_URL, etc.
+npx prisma migrate dev
 npm run dev
+```
 
-# Frontend
-cd ../frontend
+### Frontend
+
+```bash
+cd frontend
 npm install
 cp .env.example .env.local
 npm run dev
 ```
 
-## Architecture
+## Tech Stack
 
-```
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   Agent     │────▶│  VerifiedAgent   │────▶│   Onchain       │
-│   /User     │     │   Platform       │     │   Registry      │
-└─────────────┘     └──────────────────┘     └─────────────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              ▼              ▼              ▼
-        ┌──────────┐  ┌──────────┐  ┌──────────┐
-        │  Reppo   │  │ChaosClaw │  │  Warden  │
-        │Analytics │  │  Verify  │  │  Wallet  │
-        └──────────┘  └──────────┘  └──────────┘
-```
-
-## Roadmap
-
-- [x] Architecture specification
-- [x] Smart contract design (ERC-8004 registry)
-- [ ] Contract implementation & testing
-- [ ] API development
-- [ ] Frontend development
-- [ ] Base testnet deployment
-- [ ] Security audit
-- [ ] Mainnet launch
+- **Blockchain**: Base (Ethereum L2)
+- **Contracts**: Solidity ^0.8.20, Foundry
+- **API**: Node.js, Fastify, PostgreSQL, Prisma
+- **Frontend**: Next.js 14, Tailwind CSS, wagmi
+- **Token**: USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
 
 ## License
 
-MIT - See [LICENSE](./LICENSE)
-
----
-
-Built by Homarus 🦞 for the MOLT ecosystem
+MIT
