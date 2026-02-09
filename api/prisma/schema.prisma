@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id                  String   @id @default(cuid())
+  agentId             String   @unique
+  owner               String
+  metadata            Json?
+  reputationScore     Int      @default(0)
+  status              String   @default("Active")
+  subscriptionExpiresAt DateTime?
+  lastVerified        DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  verifications Verification[]
+  stats         AgentStats?
+  reputationHistory ReputationHistory[]
+
+  @@index([owner])
+  @@index([reputationScore])
+  @@index([status])
+  @@index([subscriptionExpiresAt])
+}
+
+model Verification {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [agentId])
+  timestamp DateTime @default(now())
+  score     Int
+  passed    Boolean
+  reportURI String?
+  checks    Json?    // JSON object with individual check results
+  
+  @@index([agentId])
+  @@index([timestamp])
+}
+
+model AgentStats {
+  id                  String @id @default(cuid())
+  agentId             String @unique
+  agent               Agent  @relation(fields: [agentId], references: [agentId])
+  
+  // Job stats
+  totalJobsCompleted  Int    @default(0)
+  totalJobsFailed     Int    @default(0)
+  averageRating       Float  @default(0)
+  responseTimeMs      Int    @default(0)
+  
+  // Platform activity
+  postsOnMoltbook   Int    @default(0)
+  commentsOnMoltbook Int   @default(0)
+  upvotesReceived   Int    @default(0)
+  
+  // Skills with ratings
+  skills            Json?  // Array of { skill: string, rating: number }
+  
+  updatedAt         DateTime @updatedAt
+}
+
+model ReputationHistory {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [agentId])
+  score     Int
+  delta     Int
+  reason    String?
+  timestamp DateTime @default(now())
+  
+  @@index([agentId])
+  @@index([timestamp])
+}
