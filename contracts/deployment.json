@@ -1,0 +1,10 @@
+{
+  "network": "base-sepolia",
+  "contractAddress": "0xA52E4df51B8c470825c3179aDD60023E677C6BA6",
+  "deployer": "0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38",
+  "usdcAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "timestamp": "2026-02-09T15:20:00Z",
+  "transactionHash": "0x...",
+  "gasUsed": 4312889,
+  "verified": false
+}
